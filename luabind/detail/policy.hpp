@@ -211,7 +211,7 @@ namespace luabind { namespace detail
 
         void* result;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -264,7 +264,7 @@ namespace luabind { namespace detail
 		typedef value_converter type;
         typedef mpl::false_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -316,7 +316,7 @@ namespace luabind { namespace detail
 		typedef const_pointer_converter type;
         typedef mpl::false_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -372,7 +372,7 @@ namespace luabind { namespace detail
 		typedef ref_converter type;
         typedef mpl::false_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -418,7 +418,7 @@ namespace luabind { namespace detail
 		typedef const_ref_converter type;
         typedef mpl::false_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -470,7 +470,7 @@ namespace luabind { namespace detail
 		typedef enum_converter type;
         typedef mpl::true_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -514,7 +514,7 @@ namespace luabind { namespace detail
 		typedef value_wrapper_converter<U> type;
 		typedef mpl::true_ is_native;
 
-        int const consumed_args(...)
+        int consumed_args(...) const
         {
             return 1;
         }
@@ -597,7 +597,7 @@ struct native_converter_base
 {
     typedef boost::mpl::true_ is_native;
 
-    int const consumed_args(...)
+    int consumed_args(...) const
     {
         return 1;
     }
@@ -828,7 +828,7 @@ struct default_converter<char const*>
 {
     typedef boost::mpl::true_ is_native;
 
-    int const consumed_args(...)
+    int consumed_args(...) const
     {
         return 1;
     }
@@ -879,7 +879,7 @@ struct default_converter<char[N]>
 template <>
 struct default_converter<lua_State*>
 {
-    int const consumed_args(...)
+    int consumed_args(...) const
     {
         return 0;
     }
