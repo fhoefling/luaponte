@@ -17,3 +17,8 @@ add_library(luabind
   weak_ref.cpp
   wrapper_base.cpp
 )
+
+# Suppress GCC warnings about deprecated std::auto_ptr
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set_target_properties(luabind PROPERTIES COMPILE_FLAGS "-Wno-deprecated")
+endif()
