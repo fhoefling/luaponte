@@ -1,0 +1,66 @@
+add_library(test_main
+  main.cpp
+)
+
+foreach(test
+  abstract_base
+  adopt
+  adopt_wrapper
+  attributes
+  automatic_smart_ptr
+  back_reference
+  builtin_converters
+  class_info
+  collapse_converter
+  const
+  construction
+  create_in_thread
+  def_from_base
+  dynamic_type
+  exception_handlers
+  exceptions
+  extend_class_in_lua
+  free_functions
+  has_get_pointer
+  held_type
+  implicit_cast
+  implicit_raw
+  iterator
+  lua_classes
+  null_pointer
+  object
+  operators
+  policies
+  private_destructors
+  properties
+  scope
+  separation
+  set_instance_value
+  shadow
+  shared_ptr
+  simple_class
+  smart_ptr_attributes
+  super_leak
+  table
+  tag_function
+  typetraits
+  unsigned_int
+  user_defined_converter
+  value_wrapper
+  vector_of_object
+  virtual_inheritance
+  yield
+)
+  add_executable(test_${test}
+    test_${test}.cpp
+  )
+  add_test(${test}
+    test_${test}
+  )
+  target_link_libraries(test_${test}
+    test_main
+    luaponte
+    ${LUA_LIBRARIES}
+    dl
+  )
+endforeach()

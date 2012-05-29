@@ -1,51 +1,58 @@
-// Copyright Daniel Wallin 2008. Use, modification and distribution is
-// subject to the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Luaponte library
 
-#define LUABIND_BUILDING
+// Copyright (c) 2012 Peter Colberg
 
-#include <luabind/make_function.hpp>
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-namespace luabind { namespace detail {
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-namespace
+#define LUAPONTE_BUILDING
+#include <luaponte/make_function.hpp>
+
+namespace luaponte {
+namespace detail {
+
+namespace {
+
+int function_destroy(lua_State* L)
 {
+    function_object* fn = *(function_object**)lua_touserdata(L, 1);
+    delete fn;
+    return 0;
+}
 
-  int function_destroy(lua_State* L)
-  {
-      function_object* fn = *(function_object**)lua_touserdata(L, 1);
-      delete fn;
-      return 0;
-  }
+void push_function_metatable(lua_State* L)
+{
+    lua_pushstring(L, "luabind.function");
+    lua_rawget(L, LUA_REGISTRYINDEX);
 
-  void push_function_metatable(lua_State* L)
-  {
-      lua_pushstring(L, "luabind.function");
-      lua_rawget(L, LUA_REGISTRYINDEX);
+    if (lua_istable(L, -1))
+        return;
 
-      if (lua_istable(L, -1))
-          return;
+    lua_pop(L, 1);
 
-      lua_pop(L, 1);
+    lua_newtable(L);
 
-      lua_newtable(L);
+    lua_pushstring(L, "__gc");
+    lua_pushcclosure(L, &function_destroy, 0);
+    lua_rawset(L, -3);
 
-      lua_pushstring(L, "__gc");
-      lua_pushcclosure(L, &function_destroy, 0);
-      lua_rawset(L, -3);
+    lua_pushstring(L, "luabind.function");
+    lua_pushvalue(L, -2);
+    lua_rawset(L, LUA_REGISTRYINDEX);
+}
 
-      lua_pushstring(L, "luabind.function");
-      lua_pushvalue(L, -2);
-      lua_rawset(L, LUA_REGISTRYINDEX);
-  }
+// A pointer to this is used as a tag value to identify functions exported
+// by luabind.
+int function_tag = 0;
 
-  // A pointer to this is used as a tag value to identify functions exported
-  // by luabind.
-  int function_tag = 0;
+} // namespace
 
-} // namespace unnamed
-
-LUABIND_API bool is_luabind_function(lua_State* L, int index)
+LUAPONTE_API bool is_luabind_function(lua_State* L, int index)
 {
     if (!lua_getupvalue(L, index, 2))
         return false;
@@ -54,20 +61,19 @@ LUABIND_API bool is_luabind_function(lua_State* L, int index)
     return result;
 }
 
-namespace
+namespace {
+
+inline bool is_luabind_function(object const& obj)
 {
+    obj.push(obj.interpreter());
+    bool result = detail::is_luabind_function(obj.interpreter(), -1);
+    lua_pop(obj.interpreter(), 1);
+    return result;
+}
 
-  inline bool is_luabind_function(object const& obj)
-  {
-      obj.push(obj.interpreter());
-      bool result = detail::is_luabind_function(obj.interpreter(), -1);
-      lua_pop(obj.interpreter(), 1);
-      return result;
-  }
+} // namespace
 
-} // namespace unnamed
-
-LUABIND_API void add_overload(
+LUAPONTE_API void add_overload(
     object const& context, char const* name, object const& fn)
 {
     function_object* f = *touserdata<function_object*>(getupvalue(fn, 1));
@@ -85,7 +91,7 @@ LUABIND_API void add_overload(
     context[name] = fn;
 }
 
-LUABIND_API object make_function_aux(lua_State* L, function_object* impl)
+LUAPONTE_API object make_function_aux(lua_State* L, function_object* impl)
 {
     void* storage = lua_newuserdata(L, sizeof(function_object*));
     push_function_metatable(L);
@@ -132,5 +138,5 @@ void invoke_context::format_error(
     }
 }
 
-}} // namespace luabind::detail
-
+} // namespace detail
+} // namespace luaponte

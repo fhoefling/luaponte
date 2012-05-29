@@ -1,8 +1,16 @@
-// Copyright Daniel Wallin 2009. Use, modification and distribution is
-// subject to the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Luaponte library
 
-#define LUABIND_BUILDING
+// Copyright (c) 2011-2012 Peter Colberg
+
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
+
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+#define LUAPONTE_BUILDING
 
 #include <limits>
 #include <map>
@@ -12,98 +20,98 @@
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include <luabind/typeid.hpp>
-#include <luabind/detail/inheritance.hpp>
+#include <luaponte/typeid.hpp>
+#include <luaponte/detail/inheritance.hpp>
 
-namespace luabind { namespace detail {
+namespace luaponte {
+namespace detail {
 
 class_id const class_id_map::local_id_base =
     std::numeric_limits<class_id>::max() / 2;
 
-namespace
+namespace {
+
+struct edge
 {
+    edge(class_id target, cast_function cast)
+      : target(target)
+      , cast(cast)
+    {}
 
-  struct edge
-  {
-      edge(class_id target, cast_function cast)
-        : target(target)
-        , cast(cast)
-      {}
+    class_id target;
+    cast_function cast;
+};
 
-      class_id target;
-      cast_function cast;
-  };
+bool operator<(edge const& x, edge const& y)
+{
+    return x.target < y.target;
+}
 
-  bool operator<(edge const& x, edge const& y)
-  {
-      return x.target < y.target;
-  }
+struct vertex
+{
+    vertex(class_id id)
+      : id(id)
+    {}
 
-  struct vertex
-  {
-      vertex(class_id id)
-        : id(id)
-      {}
+    class_id id;
+    std::vector<edge> edges;
+};
 
-      class_id id;
-      std::vector<edge> edges;
-  };
+typedef std::pair<std::ptrdiff_t, int> cache_entry;
 
-  typedef std::pair<std::ptrdiff_t, int> cache_entry;
+class cache
+{
+public:
+    static std::ptrdiff_t const unknown;
+    static std::ptrdiff_t const invalid;
 
-  class cache
-  {
-  public:
-      static std::ptrdiff_t const unknown;
-      static std::ptrdiff_t const invalid;
+    cache_entry get(
+        class_id src, class_id target, class_id dynamic_id
+      , std::ptrdiff_t object_offset) const;
 
-      cache_entry get(
-          class_id src, class_id target, class_id dynamic_id
-        , std::ptrdiff_t object_offset) const;
+    void put(
+        class_id src, class_id target, class_id dynamic_id
+      , std::ptrdiff_t object_offset
+      , std::ptrdiff_t offset, int distance);
 
-      void put(
-          class_id src, class_id target, class_id dynamic_id
-        , std::ptrdiff_t object_offset
-        , std::ptrdiff_t offset, int distance);
+    void invalidate();
 
-      void invalidate();
+private:
+    typedef boost::tuple<
+        class_id, class_id, class_id, std::ptrdiff_t> key_type;
+    typedef std::map<key_type, cache_entry> map_type;
+    map_type m_cache;
+};
 
-  private:
-      typedef boost::tuple<
-          class_id, class_id, class_id, std::ptrdiff_t> key_type;
-      typedef std::map<key_type, cache_entry> map_type;
-      map_type m_cache;
-  };
+std::ptrdiff_t const cache::unknown =
+    std::numeric_limits<std::ptrdiff_t>::max();
+std::ptrdiff_t const cache::invalid = cache::unknown - 1;
 
-  std::ptrdiff_t const cache::unknown =
-      std::numeric_limits<std::ptrdiff_t>::max();
-  std::ptrdiff_t const cache::invalid = cache::unknown - 1;
+cache_entry cache::get(
+    class_id src, class_id target, class_id dynamic_id
+  , std::ptrdiff_t object_offset) const
+{
+    map_type::const_iterator i = m_cache.find(
+        key_type(src, target, dynamic_id, object_offset));
+    return i != m_cache.end() ? i->second : cache_entry(unknown, -1);
+}
 
-  cache_entry cache::get(
-      class_id src, class_id target, class_id dynamic_id
-    , std::ptrdiff_t object_offset) const
-  {
-      map_type::const_iterator i = m_cache.find(
-          key_type(src, target, dynamic_id, object_offset));
-      return i != m_cache.end() ? i->second : cache_entry(unknown, -1);
-  }
+void cache::put(
+    class_id src, class_id target, class_id dynamic_id
+  , std::ptrdiff_t object_offset, std::ptrdiff_t offset, int distance)
+{
+    m_cache.insert(std::make_pair(
+        key_type(src, target, dynamic_id, object_offset)
+      , cache_entry(offset, distance)
+    ));
+}
 
-  void cache::put(
-      class_id src, class_id target, class_id dynamic_id
-    , std::ptrdiff_t object_offset, std::ptrdiff_t offset, int distance)
-  {
-      m_cache.insert(std::make_pair(
-          key_type(src, target, dynamic_id, object_offset)
-        , cache_entry(offset, distance)
-      ));
-  }
+void cache::invalidate()
+{
+    m_cache.clear();
+}
 
-  void cache::invalidate()
-  {
-      m_cache.clear();
-  }
-
-} // namespace unnamed
+} // namespace
 
 class cast_graph::impl
 {
@@ -239,7 +247,7 @@ cast_graph::cast_graph()
 cast_graph::~cast_graph()
 {}
 
-LUABIND_API class_id allocate_class_id(type_id const& cls)
+LUAPONTE_API class_id allocate_class_id(type_id const& cls)
 {
     typedef std::map<type_id, class_id> map_type;
 
@@ -255,4 +263,5 @@ LUABIND_API class_id allocate_class_id(type_id const& cls)
     return inserted.first->second;
 }
 
-}} // namespace luabind::detail
+} // namespace detail
+} // namespace luaponte

@@ -1,24 +1,14 @@
-// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2011-2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #include <iostream>
 #include <cstring>
@@ -29,7 +19,7 @@ extern "C"
     #include "lualib.h"
 }
 
-#include <luabind/open.hpp>
+#include <luaponte/open.hpp>
 #include "test.hpp"
 
 extern "C" struct lua_State;
@@ -42,7 +32,7 @@ struct lua_state
     ~lua_state();
 
     operator lua_State*() const;
-	void check() const;
+    void check() const;
 
 private:
     lua_State* m_state;
@@ -54,14 +44,14 @@ lua_state::lua_state()
 {
     luaopen_base(m_state);
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501
-	 // lua 5.1 or newer
-	 luaL_openlibs(m_state);
+     // lua 5.1 or newer
+     luaL_openlibs(m_state);
 #else
-	 // lua 5.0.2 or older
+     // lua 5.0.2 or older
     lua_baselibopen(m_state);
 #endif
     m_top = lua_gettop(m_state);
-    luabind::open(m_state);
+    luaponte::open(m_state);
 }
 
 lua_state::~lua_state()
@@ -81,7 +71,7 @@ lua_state::operator lua_State*() const
 
 int pcall_handler(lua_State* L)
 {
-	return 1;
+    return 1;
 }
 
 void dostring(lua_State* state, char const* str)
@@ -92,14 +82,14 @@ void dostring(lua_State* state, char const* str)
     {
         std::string err(lua_tostring(state, -1));
         lua_pop(state, 2);
-		throw err;
+        throw err;
     }
 
     if (lua_pcall(state, 0, 0, -2))
     {
         std::string err(lua_tostring(state, -1));
         lua_pop(state, 2);
-		throw err;
+        throw err;
     }
 
     lua_pop(state, 1);
@@ -109,34 +99,33 @@ bool tests_failure = false;
 
 void report_failure(char const* err, char const* file, int line)
 {
-	std::cerr << file << ":" << line << "\"" << err << "\"\n";
-	tests_failure = true;
+    std::cerr << file << ":" << line << "\"" << err << "\"\n";
+    tests_failure = true;
 }
 
 int main()
 {
-	lua_state L;
-	try
-	{
-		test_main(L);
-		L.check();
-		return tests_failure ? 1 : 0;
-	}
-	catch (luabind::error const& e)
-	{
-		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n"
-			<< lua_tostring(e.state(), -1) << "\n";
-		return 1;
-	}
-	catch (std::exception const& e)
-	{
-		std::cerr << "Terminated with exception: \"" << e.what() << "\"\n";
-		return 1;
-	}
-	catch (...)
-	{
-		std::cerr << "Terminated with unknown exception\n";
-		return 1;
-	}
+    lua_state L;
+    try
+    {
+        test_main(L);
+        L.check();
+        return tests_failure ? 1 : 0;
+    }
+    catch (luaponte::error const& e)
+    {
+        std::cerr << "Terminated with exception: \"" << e.what() << "\"\n"
+            << lua_tostring(e.state(), -1) << "\n";
+        return 1;
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Terminated with exception: \"" << e.what() << "\"\n";
+        return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "Terminated with unknown exception\n";
+        return 1;
+    }
 }
-

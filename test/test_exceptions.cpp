@@ -1,27 +1,17 @@
-// Copyright (c) 2004 Daniel Wallin
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
+#include <luaponte/luaponte.hpp>
 
 struct ex : public std::exception, public counted_type<ex>
 {
@@ -46,9 +36,9 @@ COUNTER_GUARD(exception_thrower);
 
 void test_main(lua_State* L)
 {
-    using namespace luabind;
+    using namespace luaponte;
 
-#ifndef LUABIND_NO_EXCEPTIONS
+#ifndef LUAPONTE_NO_EXCEPTIONS
 
     const int start_count = ex::count;
 
@@ -72,17 +62,16 @@ void test_main(lua_State* L)
     DOSTRING_EXPECTED(L, "a:g()", "c-string: 'a string exception'");
 
     DOSTRING_EXPECTED(L, "a:h()", "Unknown C++ exception");
-    DOSTRING_EXPECTED(L, 
+    DOSTRING_EXPECTED(L,
         "obj = throw('incorrect', 'parameters', 'constructor')",
         "No matching overload found, candidates:\n"
-        "void __init(luabind::argument const&,int,int,int)\n"
-        "void __init(luabind::argument const&,int,int)\n"
-        "void __init(luabind::argument const&,int)\n"
-        "void __init(luabind::argument const&)");
+        "void __init(luaponte::argument const&,int,int,int)\n"
+        "void __init(luaponte::argument const&,int,int)\n"
+        "void __init(luaponte::argument const&,int)\n"
+        "void __init(luaponte::argument const&)");
 
     const int end_count = ex::count;
     TEST_CHECK( start_count == end_count );
 
 #endif
 }
-

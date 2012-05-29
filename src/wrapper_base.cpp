@@ -1,53 +1,46 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-#define LUABIND_BUILDING
+#define LUAPONTE_BUILDING
 
-#include <luabind/config.hpp>
-#include <luabind/lua_include.hpp>
-#include <luabind/function.hpp>
-#include <luabind/detail/object_rep.hpp>
-#include <luabind/detail/class_rep.hpp>
-#include <luabind/detail/stack_utils.hpp>
+#include <luaponte/config.hpp>
+#include <luaponte/lua_include.hpp>
+#include <luaponte/function.hpp>
+#include <luaponte/detail/object_rep.hpp>
+#include <luaponte/detail/class_rep.hpp>
+#include <luaponte/detail/stack_utils.hpp>
 
-namespace luabind { namespace detail
+namespace luaponte {
+namespace detail {
+
+LUAPONTE_API void do_call_member_selection(lua_State* L, char const* name)
 {
-	LUABIND_API void do_call_member_selection(lua_State* L, char const* name)
-	{
-		object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
+    object_rep* obj = static_cast<object_rep*>(lua_touserdata(L, -1));
 
-        lua_pushstring(L, name);
-        lua_gettable(L, -2);
-        lua_replace(L, -2);
+    lua_pushstring(L, name);
+    lua_gettable(L, -2);
+    lua_replace(L, -2);
 
-		if (!is_luabind_function(L, -1))
-			return;
+    if (!is_luabind_function(L, -1))
+        return;
 
-		// this (usually) means the function has not been
-		// overridden by lua, call the default implementation
-		lua_pop(L, 1);
-		obj->crep()->get_default_table(L); // push the crep table
-		lua_pushstring(L, name);
-		lua_gettable(L, -2);
-		lua_remove(L, -2); // remove the crep table
-	}
-}}
+    // this (usually) means the function has not been
+    // overridden by lua, call the default implementation
+    lua_pop(L, 1);
+    obj->crep()->get_default_table(L); // push the crep table
+    lua_pushstring(L, name);
+    lua_gettable(L, -2);
+    lua_remove(L, -2); // remove the crep table
+}
+
+} // namespace detail
+} // namespace luaponte

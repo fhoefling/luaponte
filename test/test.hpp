@@ -1,32 +1,22 @@
-// Copyright (c) 2005 Daniel Wallin, Arvid Norberg
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef TEST_050415_HPP
-#define TEST_050415_HPP
+#ifndef LUAPONTE_TEST_HPP
+#define LUAPONTE_TEST_HPP
 
 #include <boost/preprocessor/cat.hpp>
-#include <luabind/error.hpp>
+#include <luaponte/error.hpp>
 
-extern "C" 
+extern "C"
 {
     #include "lua.h"
     #include "lauxlib.h"
@@ -49,24 +39,24 @@ void report_failure(char const* str, char const* file, int line);
 #endif
 
 #define TEST_REPORT_AUX(x, line, file) \
-	report_failure(x, line, file)
+    report_failure(x, line, file)
 
 #define TEST_CHECK(x) \
     if (!(x)) \
         TEST_REPORT_AUX("TEST_CHECK failed: \"" #x "\"", __FILE__, __LINE__)
 
 #define TEST_ERROR(x) \
-	TEST_REPORT_AUX((std::string("ERROR: \"") + x + "\"").c_str(), __FILE__, __LINE__)
+    TEST_REPORT_AUX((std::string("ERROR: \"") + x + "\"").c_str(), __FILE__, __LINE__)
 
 #define TEST_NOTHROW(x) \
-	try \
-	{ \
-		x; \
-	} \
-	catch (...) \
-	{ \
-		TEST_ERROR("Exception thrown: " #x); \
-	}
+    try \
+    { \
+        x; \
+    } \
+    catch (...) \
+    { \
+        TEST_ERROR("Exception thrown: " #x); \
+    }
 
 void dostring(lua_State* L, char const* str);
 
@@ -74,7 +64,7 @@ template<class T>
 struct counted_type
 {
     static int count;
-    
+
     counted_type()
     {
         ++count;
@@ -100,10 +90,10 @@ int counted_type<T>::count = 0;
     {                                           \
         dostring(state_, str);                  \
     }                                           \
-    catch (luabind::error const& e)             \
+    catch (luaponte::error const& e)             \
     {                                           \
-		using namespace std;					\
-		if (std::strcmp(                        \
+        using namespace std;                    \
+        if (std::strcmp(                        \
             lua_tostring(e.state(), -1)         \
           , (char const*)expected))             \
         {                                       \
@@ -124,7 +114,7 @@ int counted_type<T>::count = 0;
     {                                           \
         dostring(state_, str);                  \
     }                                           \
-    catch (luabind::error const& e)             \
+    catch (luaponte::error const& e)             \
     {                                           \
         TEST_ERROR(lua_tostring(e.state(), -1)); \
             lua_pop(L, 1);                      \
@@ -135,5 +125,4 @@ int counted_type<T>::count = 0;
     }                                           \
 }
 
-#endif // TEST_050415_HPP
-
+#endif // LUAPONTE_TEST_HPP

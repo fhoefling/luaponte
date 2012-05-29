@@ -1,43 +1,33 @@
-// Copyright (c) 2003 Daniel Wallin and Arvid Norberg
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-#define LUABIND_BUILDING
+#define LUAPONTE_BUILDING
 
-#include <luabind/detail/link_compatibility.hpp>
+#include <luaponte/detail/link_compatibility.hpp>
 
-namespace luabind { namespace detail
-{
+namespace luaponte {
+namespace detail {
 
-#ifdef LUABIND_NOT_THREADSAFE
-	void not_threadsafe_defined_conflict() {}
+#ifdef LUAPONTE_NOT_THREADSAFE
+void not_threadsafe_defined_conflict() {}
 #else
-	void not_threadsafe_not_defined_conflict() {}
+void not_threadsafe_not_defined_conflict() {}
 #endif
 
-#ifdef LUABIND_NO_ERROR_CHECKING
-	void no_error_checking_defined_conflict() {}
+#ifdef LUAPONTE_NO_ERROR_CHECKING
+void no_error_checking_defined_conflict() {}
 #else
-	void no_error_checking_not_defined_conflict() {}
+void no_error_checking_not_defined_conflict() {}
 #endif
 
-}}
-
+} // namespace detail
+} // namespace luaponte

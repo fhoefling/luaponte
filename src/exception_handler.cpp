@@ -1,31 +1,41 @@
-// Copyright Daniel Wallin 2005. Use, modification and distribution is
-// subject to the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Luaponte library
 
-#define LUABIND_BUILDING
+// Copyright (c) 2012 Peter Colberg
 
-#include <luabind/config.hpp>
-#include <luabind/exception_handler.hpp>
-#include <luabind/error.hpp>
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
+
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+#define LUAPONTE_BUILDING
+
+#include <luaponte/config.hpp>
+#include <luaponte/exception_handler.hpp>
+#include <luaponte/error.hpp>
 #include <stdexcept>
 
-#ifndef LUABIND_NO_EXCEPTIONS
+#ifndef LUAPONTE_NO_EXCEPTIONS
 
-namespace luabind { namespace detail {
+namespace luaponte {
+namespace detail {
 
-namespace
+namespace {
+
+exception_handler_base* handler_chain = 0;
+
+void push_exception_string(lua_State* L, char const* exception, char const* what)
 {
-  exception_handler_base* handler_chain = 0;
-
-  void push_exception_string(lua_State* L, char const* exception, char const* what)
-  {
-      lua_pushstring(L, exception);
-      lua_pushstring(L, ": '");
-      lua_pushstring(L, what);
-      lua_pushstring(L, "'");
-      lua_concat(L, 4);
-  }
+    lua_pushstring(L, exception);
+    lua_pushstring(L, ": '");
+    lua_pushstring(L, what);
+    lua_pushstring(L, "'");
+    lua_concat(L, 4);
 }
+
+} // namespace
 
 void exception_handler_base::try_next(lua_State* L) const
 {
@@ -35,7 +45,7 @@ void exception_handler_base::try_next(lua_State* L) const
         throw;
 }
 
-LUABIND_API void handle_exception_aux(lua_State* L)
+LUAPONTE_API void handle_exception_aux(lua_State* L)
 {
     try
     {
@@ -68,7 +78,7 @@ LUABIND_API void handle_exception_aux(lua_State* L)
     }
 }
 
-LUABIND_API void register_exception_handler(exception_handler_base* handler)
+LUAPONTE_API void register_exception_handler(exception_handler_base* handler)
 {
     if (!handler_chain) handler_chain = handler;
     else
@@ -82,6 +92,7 @@ LUABIND_API void register_exception_handler(exception_handler_base* handler)
     }
 }
 
-}} // namespace luabind::detail
+} // namespace detail
+} // namespace luaponte
 
-#endif // LUABIND_NO_EXCEPTIONS
+#endif // LUAPONTE_NO_EXCEPTIONS

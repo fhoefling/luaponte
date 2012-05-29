@@ -1,28 +1,18 @@
-// Copyright (c) 2004 Daniel Wallin and Arvid Norberg
+// Luaponte library
 
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
+// Copyright (c) 2011-2012 Peter Colberg
 
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// Luaponte is based on Luabind, a library, inspired by and similar to
+// Boost.Python, that helps you create bindings between C++ and Lua,
+// Copyright (c) 2003-2010 Daniel Wallin and Arvid Norberg.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// OR OTHER DEALINGS IN THE SOFTWARE.
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See accompanying file LICENSE or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test.hpp"
-#include <luabind/luabind.hpp>
-#include <luabind/adopt_policy.hpp>
+#include <luaponte/luaponte.hpp>
+#include <luaponte/adopt_policy.hpp>
 
 struct base : counted_type<base>
 {
@@ -75,7 +65,7 @@ int function_should_never_be_called(lua_State* L)
 
 void test_main(lua_State* L)
 {
-    using namespace luabind;
+    using namespace luaponte;
 
     lua_pushcclosure(L, &function_should_never_be_called, 0);
     lua_setglobal(L, "f");
@@ -86,7 +76,7 @@ void test_main(lua_State* L)
     [
         class_<copy_me>("copy_me")
             .def(constructor<>()),
-    
+
         class_<base>("base")
             .def("f", &base::f),
 
@@ -97,13 +87,13 @@ void test_main(lua_State* L)
         def("f", (int(*)(int, int)) &f),
         def("create", &create_base, adopt(return_value))
 //        def("set_functor", &set_functor)
-            
+
 #if !(BOOST_MSVC < 1300)
         ,
         def("test_value_converter", &test_value_converter),
         def("test_pointer_converter", &test_pointer_converter)
 #endif
-            
+
     ];
 
     DOSTRING(L,
@@ -141,7 +131,7 @@ void test_main(lua_State* L)
         call_function<void>(L, "failing_fun");
         TEST_ERROR("function didn't fail when it was expected to");
     }
-    catch(luabind::error const& e)
+    catch(luaponte::error const& e)
     {
         if (std::string("[string \"function failing_fun() error('expected "
 #if LUA_VERSION_NUM >= 502
@@ -158,4 +148,3 @@ void test_main(lua_State* L)
     }
 
 }
-
