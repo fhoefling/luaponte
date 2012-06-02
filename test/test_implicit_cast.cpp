@@ -12,7 +12,8 @@
 
 #include "test.hpp"
 #include <luaponte/luaponte.hpp>
-#include <boost/shared_ptr.hpp>
+
+#include <memory>
 
 struct A : counted_type<A> 
 { virtual ~A() {} };
@@ -44,7 +45,7 @@ void func(const char_pointer_convertable& f)
 {
 }
 
-void not_convertable(boost::shared_ptr<A>)
+void not_convertable(std::shared_ptr<A>)
 {
     TEST_CHECK(false);
 }
@@ -119,7 +120,7 @@ void test_main(lua_State* L)
         "no_convert(a)",
         ("No matching overload found, candidates:\n"
         "void no_convert(custom ["
-        + type_id(typeid(boost::shared_ptr<A>)).name() + "])").c_str());
+        + type_id(typeid(std::shared_ptr<A>)).name() + "])").c_str());
 
     DOSTRING_EXPECTED(L,
         "a = nil\n"

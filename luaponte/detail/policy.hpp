@@ -18,6 +18,7 @@
 #include <typeinfo>
 #include <string>
 #include <memory>
+#include <type_traits>
 
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -155,7 +156,8 @@ namespace detail {
     namespace mpl = boost::mpl;
 
     template <class T, class Clone>
-    void make_pointee_instance(lua_State* L, T& x, mpl::true_, Clone)
+    typename std::enable_if<has_get_pointer<T>::value, void>::type
+    make_pointee_instance(lua_State* L, T& x, Clone)
     {
         if (get_pointer(x))
         {
@@ -168,22 +170,18 @@ namespace detail {
     }
 
     template <class T>
-    void make_pointee_instance(lua_State* L, T& x, mpl::false_, mpl::true_)
+    typename std::enable_if<!has_get_pointer<T>::value, void>::type
+    make_pointee_instance(lua_State* L, T& x, mpl::true_)
     {
         std::unique_ptr<T> ptr(new T(x));
         make_instance(L, std::move(ptr));
     }
 
     template <class T>
-    void make_pointee_instance(lua_State* L, T& x, mpl::false_, mpl::false_)
+    typename std::enable_if<!has_get_pointer<T>::value, void>::type
+    make_pointee_instance(lua_State* L, T& x, mpl::false_)
     {
         make_instance(L, &x);
-    }
-
-    template <class T, class Clone>
-    void make_pointee_instance(lua_State* L, T& x, Clone)
-    {
-        make_pointee_instance(L, x, has_get_pointer<T>(), Clone());
     }
 
 // ********** pointer converter ***********

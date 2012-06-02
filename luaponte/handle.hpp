@@ -27,7 +27,7 @@ public:
     handle(lua_State* interpreter, int stack_index);
     handle(lua_State* main, lua_State* interpreter, int stack_index);
     handle(handle const& other);
-    ~handle();
+    ~handle() noexcept;
 
     handle& operator=(handle const& other);
     void swap(handle& other);
@@ -73,7 +73,7 @@ inline handle::handle(lua_State* main, lua_State* interpreter, int stack_index)
     m_index = luaL_ref(interpreter, LUA_REGISTRYINDEX);
 }
 
-inline handle::~handle()
+inline handle::~handle() noexcept
 {
     if (m_interpreter && m_index != LUA_NOREF)
         luaL_unref(m_interpreter, LUA_REGISTRYINDEX, m_index);

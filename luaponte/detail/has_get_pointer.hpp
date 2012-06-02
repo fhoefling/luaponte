@@ -13,84 +13,26 @@
 #ifndef LUAPONTE_DETAIL_HAS_GET_POINTER_HPP
 #define LUAPONTE_DETAIL_HAS_GET_POINTER_HPP
 
-#include <boost/type_traits/add_reference.hpp>
+#include <luaponte/get_pointer.hpp>
 
-#ifndef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-# include <memory>
-#endif
+#include <type_traits>
 
 namespace luaponte {
 namespace detail {
 
-namespace has_get_pointer_
-{
-
-  struct any
-  {
-      template<class T> any(T const&);
-  };
-
-  struct no_overload_tag
-  {};
-
-  typedef char (&yes)[1];
-  typedef char (&no)[2];
-
-  no_overload_tag operator,(no_overload_tag, int);
-
-//
-// On compilers with ADL, we need these generic overloads in this
-// namespace as well as in luaponte::. Otherwise get_pointer(any)
-// will be found before them.
-//
-#ifndef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-
-  template<class T>
-  T* get_pointer(T const volatile*);
-
-  template<class T>
-  T* get_pointer(std::unique_ptr<T> const&);
-
-#endif
-
-//
-// On compilers that doesn't support ADL, the overload below has to
-// live in luaponte::.
-//
-#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-}} // namespace detail::has_get_pointer_
-#endif
-
-detail::has_get_pointer_::no_overload_tag
-  get_pointer(detail::has_get_pointer_::any);
-
-#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-namespace detail { namespace has_get_pointer_
-{
-#endif
-
-  template<class T>
-  yes check(T const&);
-  no check(no_overload_tag);
-
-  template<class T>
-  struct impl
-  {
-      static typename boost::add_reference<T>::type x;
-
-      BOOST_STATIC_CONSTANT(bool,
-          value = sizeof(has_get_pointer_::check( (get_pointer(x),0) )) == 1
-      );
-
-      typedef boost::mpl::bool_<value> type;
-  };
-
-} // namespace has_get_pointer_
-
-template<class T>
+template <typename T, typename Enable = void>
 struct has_get_pointer
-  : has_get_pointer_::impl<T>::type
-{};
+  : std::false_type {};
+
+
+template <typename T>
+struct has_get_pointer<T
+  , typename std::enable_if<
+        std::is_pointer<
+            decltype(get_pointer(*static_cast<T*>(0)))
+        >::value
+    >::type>
+  : std::true_type {};
 
 } // namespace detail
 } // namespace luaponte

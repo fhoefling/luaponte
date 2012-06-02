@@ -24,6 +24,12 @@ namespace luaponte {
 
 using boost::get_pointer;
 
+template <typename T>
+T* get_pointer(std::shared_ptr<T> const& ptr)
+{
+    return ptr.get();
+}
+
 template <typename T, typename Deleter>
 T* get_pointer(std::unique_ptr<T, Deleter> const& ptr)
 {

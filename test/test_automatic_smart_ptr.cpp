@@ -12,8 +12,8 @@
 
 #include "test.hpp"
 #include <luaponte/luaponte.hpp>
+#include <luaponte/shared_ptr_converter.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include <memory>
 
 struct X
@@ -66,9 +66,9 @@ std::unique_ptr<X> make1()
     return std::unique_ptr<X>(new X(1));
 }
 
-boost::shared_ptr<X> make2()
+std::shared_ptr<X> make2()
 {
-    return boost::shared_ptr<X>(new X(2));
+    return std::shared_ptr<X>(new X(2));
 }
 
 ptr make3()

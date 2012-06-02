@@ -17,9 +17,11 @@
 #include <luaponte/wrapper_base.hpp>
 #include <luaponte/detail/has_get_pointer.hpp>
 #include <luaponte/get_pointer.hpp>
+
 #include <boost/type_traits/is_polymorphic.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <boost/mpl/if.hpp>
+#include <type_traits>
 
 namespace luaponte {
 namespace detail {
@@ -45,24 +47,17 @@ namespace detail {
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux2(T const& x, mpl::true_)
+  typename std::enable_if<has_get_pointer<T>::value, wrap_base const*>::type
+  get_back_reference(T const& x)
   {
       return get_back_reference_aux1(get_pointer(x));
   }
 
   template<class T>
-  wrap_base const* get_back_reference_aux2(T const& x, mpl::false_)
+  typename std::enable_if<!has_get_pointer<T>::value, wrap_base const*>::type
+  get_back_reference(T const& x)
   {
       return get_back_reference_aux1(&x);
-  }
-
-  template<class T>
-  wrap_base const* get_back_reference(T const& x)
-  {
-      return detail::get_back_reference_aux2(
-          x
-        , has_get_pointer<T>()
-      );
   }
 
 } // namespace detail
