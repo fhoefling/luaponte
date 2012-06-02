@@ -61,6 +61,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 #include <cassert>
 
@@ -323,7 +324,7 @@ namespace luaponte {
         template <class T>
         struct default_pointer<null_type, T>
         {
-            typedef std::auto_ptr<T> type;
+            typedef std::unique_ptr<T> type;
         };
 
         template <class Class, class Pointer, class Signature, class Policies>

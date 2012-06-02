@@ -18,7 +18,9 @@
 #include <luaponte/detail/policy.hpp>
 #include <luaponte/back_reference_fwd.hpp>
 #include <luaponte/wrapper_base.hpp>
+
 #include <boost/type_traits/is_polymorphic.hpp>
+#include <memory>
 
 namespace luaponte {
 namespace detail {
@@ -82,7 +84,7 @@ struct pointer_or_default
 template <class T>
 struct pointer_or_default<void, T>
 {
-    typedef std::auto_ptr<T> type;
+    typedef std::unique_ptr<T> type;
 };
 
 template <class Pointer>

@@ -12,7 +12,9 @@
 
 #include "test.hpp"
 #include <luaponte/luaponte.hpp>
+
 #include <boost/shared_ptr.hpp>
+#include <memory>
 
 struct X
 {
@@ -59,9 +61,9 @@ X* get_pointer(ptr const& p)
     return p.p;
 }
 
-std::auto_ptr<X> make1()
+std::unique_ptr<X> make1()
 {
-    return std::auto_ptr<X>(new X(1));
+    return std::unique_ptr<X>(new X(1));
 }
 
 boost::shared_ptr<X> make2()

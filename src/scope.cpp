@@ -13,11 +13,12 @@
 #define LUAPONTE_BUILDING
 
 #include <luaponte/lua_include.hpp>
-
 #include <luaponte/scope.hpp>
 #include <luaponte/detail/debug.hpp>
 #include <luaponte/detail/stack_utils.hpp>
+
 #include <cassert>
+#include <memory>
 
 #if LUA_VERSION_NUM < 502
 # define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
@@ -43,7 +44,7 @@ scope::scope()
 {
 }
 
-scope::scope(std::auto_ptr<detail::registration> reg)
+scope::scope(std::unique_ptr<detail::registration> reg)
     : m_chain(reg.release())
 {
 }
@@ -183,7 +184,7 @@ struct namespace_::registration_ : detail::registration
 };
 
 namespace_::namespace_(char const* name)
-    : scope(std::auto_ptr<detail::registration>(
+    : scope(std::unique_ptr<detail::registration>(
           m_registration = new registration_(name)))
 {
 }
