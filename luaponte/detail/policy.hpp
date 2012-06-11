@@ -633,107 +633,350 @@ struct native_converter_base
     }
 };
 
-template <class T>
-lua_Integer as_lua_integer(T v)
+namespace detail {
+
+#ifndef LUAPONTE_NO_EXACT_INTEGER_CONVERSION
+template <typename T, typename S>
+inline T checked_narrowing_cast(lua_State* L, S const& value)
 {
-    return static_cast<lua_Integer>(v);
+    T result = static_cast<T>(value);
+    if (static_cast<S>(result) != value) {
+        lua_pushliteral(L, "value not exactly representable in target type");
+        throw error(L);
+    }
+    return result;
 }
-
-template <class T>
-lua_Number as_lua_number(T v)
-{
-    return static_cast<lua_Number>(v);
-}
-
-#ifdef BOOST_HAS_RVALUE_REFS
-
-# define LUAPONTE_NUMBER_CONVERTER(type, kind) \
-    template <> \
-struct default_converter<type> \
-  : native_converter_base<type> \
-{ \
-    int compute_score(lua_State* L, int index) \
-    { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    }; \
-    \
-    type from(lua_State* L, int index) \
-    { \
-        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-    } \
-    \
-    void to(lua_State* L, type const& value) \
-    { \
-        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
-    } \
-}; \
-\
-template <> \
-struct default_converter<type const> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type const&> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type&&> \
-  : default_converter<type> \
-{};
-
-#else
-
-# define LUAPONTE_NUMBER_CONVERTER(type, kind) \
-    template <> \
-struct default_converter<type> \
-  : native_converter_base<type> \
-{ \
-    int compute_score(lua_State* L, int index) \
-    { \
-        return lua_type(L, index) == LUA_TNUMBER ? 0 : -1; \
-    }; \
-    \
-    type from(lua_State* L, int index) \
-    { \
-        return static_cast<type>(BOOST_PP_CAT(lua_to, kind)(L, index)); \
-    } \
-    \
-    void to(lua_State* L, type const& value) \
-    { \
-        BOOST_PP_CAT(lua_push, kind)(L, BOOST_PP_CAT(as_lua_, kind)(value)); \
-    } \
-}; \
-\
-template <> \
-struct default_converter<type const> \
-  : default_converter<type> \
-{}; \
-\
-template <> \
-struct default_converter<type const&> \
-  : default_converter<type> \
-{};
-
 #endif
 
-LUAPONTE_NUMBER_CONVERTER(char, integer)
-LUAPONTE_NUMBER_CONVERTER(signed char, integer)
-LUAPONTE_NUMBER_CONVERTER(unsigned char, integer)
-LUAPONTE_NUMBER_CONVERTER(signed short, integer)
-LUAPONTE_NUMBER_CONVERTER(unsigned short, integer)
-LUAPONTE_NUMBER_CONVERTER(signed int, integer)
+template <typename T>
+struct integer_number_converter
+  : native_converter_base<T>
+{
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_isnumber(L, index) ? 0 : -1;
+    };
 
-LUAPONTE_NUMBER_CONVERTER(unsigned int, number)
-LUAPONTE_NUMBER_CONVERTER(unsigned long, number)
+    T from(lua_State* L, int index)
+    {
+#ifndef LUAPONTE_NO_EXACT_INTEGER_CONVERSION
+        return checked_narrowing_cast<T>(L, lua_tonumber(L, index));
+#else
+        return static_cast<T>(lua_tonumber(L, index));
+#endif
+    }
 
-LUAPONTE_NUMBER_CONVERTER(signed long, integer)
-LUAPONTE_NUMBER_CONVERTER(float, number)
-LUAPONTE_NUMBER_CONVERTER(double, number)
-LUAPONTE_NUMBER_CONVERTER(long double, number)
+    void to(lua_State* L, T const& value)
+    {
+#ifndef LUAPONTE_NO_EXACT_INTEGER_CONVERSION
+        lua_pushnumber(L, checked_narrowing_cast<lua_Number>(L, value));
+#else
+        lua_pushnumber(L, static_cast<lua_Number>(value));
+#endif
+    }
+};
 
-# undef LUAPONTE_NUMBER_CONVERTER
+template <typename T>
+struct floating_point_number_converter
+  : native_converter_base<T>
+{
+    int compute_score(lua_State* L, int index)
+    {
+        return lua_isnumber(L, index) ? 0 : -1;
+    };
+
+    T from(lua_State* L, int index)
+    {
+        return static_cast<T>(lua_tonumber(L, index));
+    }
+
+    void to(lua_State* L, T const& value)
+    {
+        lua_pushnumber(L, static_cast<lua_Number>(value));
+    }
+};
+
+} // namespace detail
+
+template <>
+struct default_converter<char>
+  : detail::integer_number_converter<char>
+{};
+
+template <>
+struct default_converter<char const>
+  : detail::integer_number_converter<char>
+{};
+
+template <>
+struct default_converter<char const&>
+  : detail::integer_number_converter<char>
+{};
+
+template <>
+struct default_converter<char&&>
+  : detail::integer_number_converter<char>
+{};
+
+template <>
+struct default_converter<signed char>
+  : detail::integer_number_converter<signed char>
+{};
+
+template <>
+struct default_converter<signed char const>
+  : detail::integer_number_converter<signed char>
+{};
+
+template <>
+struct default_converter<signed char const&>
+  : detail::integer_number_converter<signed char>
+{};
+
+template <>
+struct default_converter<signed char&&>
+  : detail::integer_number_converter<signed char>
+{};
+
+template <>
+struct default_converter<unsigned char>
+  : detail::integer_number_converter<unsigned char>
+{};
+
+template <>
+struct default_converter<unsigned char const>
+  : detail::integer_number_converter<unsigned char>
+{};
+
+template <>
+struct default_converter<unsigned char const&>
+  : detail::integer_number_converter<unsigned char>
+{};
+
+template <>
+struct default_converter<unsigned char&&>
+  : detail::integer_number_converter<unsigned char>
+{};
+
+template <>
+struct default_converter<short int>
+  : detail::integer_number_converter<short int>
+{};
+
+template <>
+struct default_converter<short int const>
+  : detail::integer_number_converter<short int>
+{};
+
+template <>
+struct default_converter<short int const&>
+  : detail::integer_number_converter<short int>
+{};
+
+template <>
+struct default_converter<short int&&>
+  : detail::integer_number_converter<short int>
+{};
+
+template <>
+struct default_converter<unsigned short int>
+  : detail::integer_number_converter<unsigned short int>
+{};
+
+template <>
+struct default_converter<unsigned short int const>
+  : detail::integer_number_converter<unsigned short int>
+{};
+
+template <>
+struct default_converter<unsigned short int const&>
+  : detail::integer_number_converter<unsigned short int>
+{};
+
+template <>
+struct default_converter<unsigned short int&&>
+  : detail::integer_number_converter<unsigned short int>
+{};
+
+template <>
+struct default_converter<int>
+  : detail::integer_number_converter<int>
+{};
+
+template <>
+struct default_converter<int const>
+  : detail::integer_number_converter<int>
+{};
+
+template <>
+struct default_converter<int const&>
+  : detail::integer_number_converter<int>
+{};
+
+template <>
+struct default_converter<int&&>
+  : detail::integer_number_converter<int>
+{};
+
+template <>
+struct default_converter<unsigned int>
+  : detail::integer_number_converter<unsigned int>
+{};
+
+template <>
+struct default_converter<unsigned int const>
+  : detail::integer_number_converter<unsigned int>
+{};
+
+template <>
+struct default_converter<unsigned int const&>
+  : detail::integer_number_converter<unsigned int>
+{};
+
+template <>
+struct default_converter<unsigned int&&>
+  : detail::integer_number_converter<unsigned int>
+{};
+
+template <>
+struct default_converter<long int>
+  : detail::integer_number_converter<long int>
+{};
+
+template <>
+struct default_converter<long int const>
+  : detail::integer_number_converter<long int>
+{};
+
+template <>
+struct default_converter<long int const&>
+  : detail::integer_number_converter<long int>
+{};
+
+template <>
+struct default_converter<long int&&>
+  : detail::integer_number_converter<long int>
+{};
+
+template <>
+struct default_converter<unsigned long int>
+  : detail::integer_number_converter<unsigned long int>
+{};
+
+template <>
+struct default_converter<unsigned long int const>
+  : detail::integer_number_converter<unsigned long int>
+{};
+
+template <>
+struct default_converter<unsigned long int const&>
+  : detail::integer_number_converter<unsigned long int>
+{};
+
+template <>
+struct default_converter<unsigned long int&&>
+  : detail::integer_number_converter<unsigned long int>
+{};
+
+template <>
+struct default_converter<long long int>
+  : detail::integer_number_converter<long long int>
+{};
+
+template <>
+struct default_converter<long long int const>
+  : detail::integer_number_converter<long long int>
+{};
+
+template <>
+struct default_converter<long long int const&>
+  : detail::integer_number_converter<long long int>
+{};
+
+template <>
+struct default_converter<long long int&&>
+  : detail::integer_number_converter<long long int>
+{};
+
+template <>
+struct default_converter<unsigned long long int>
+  : detail::integer_number_converter<unsigned long long int>
+{};
+
+template <>
+struct default_converter<unsigned long long int const>
+  : detail::integer_number_converter<unsigned long long int>
+{};
+
+template <>
+struct default_converter<unsigned long long int const&>
+  : detail::integer_number_converter<unsigned long long int>
+{};
+
+template <>
+struct default_converter<unsigned long long int&&>
+  : detail::integer_number_converter<unsigned long long int>
+{};
+
+template <>
+struct default_converter<float>
+  : detail::floating_point_number_converter<float>
+{};
+
+template <>
+struct default_converter<float const>
+  : detail::floating_point_number_converter<float>
+{};
+
+template <>
+struct default_converter<float const&>
+  : detail::floating_point_number_converter<float>
+{};
+
+template <>
+struct default_converter<float&&>
+  : detail::floating_point_number_converter<float>
+{};
+
+template <>
+struct default_converter<double>
+  : detail::floating_point_number_converter<double>
+{};
+
+template <>
+struct default_converter<double const>
+  : detail::floating_point_number_converter<double>
+{};
+
+template <>
+struct default_converter<double const&>
+  : detail::floating_point_number_converter<double>
+{};
+
+template <>
+struct default_converter<double&&>
+  : detail::floating_point_number_converter<double>
+{};
+
+template <>
+struct default_converter<long double>
+  : detail::floating_point_number_converter<long double>
+{};
+
+template <>
+struct default_converter<long double const>
+  : detail::floating_point_number_converter<long double>
+{};
+
+template <>
+struct default_converter<long double const&>
+  : detail::floating_point_number_converter<long double>
+{};
+
+template <>
+struct default_converter<long double&&>
+  : detail::floating_point_number_converter<long double>
+{};
 
 template <>
 struct default_converter<bool>
