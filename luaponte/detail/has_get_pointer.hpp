@@ -16,6 +16,7 @@
 #include <luaponte/get_pointer.hpp>
 
 #include <type_traits>
+#include <utility>
 
 namespace luaponte {
 namespace detail {
@@ -29,7 +30,7 @@ template <typename T>
 struct has_get_pointer<T
   , typename std::enable_if<
         std::is_pointer<
-            decltype(get_pointer(*static_cast<T*>(0)))
+            decltype(get_pointer(std::declval<T>()))
         >::value
     >::type>
   : std::true_type {};
