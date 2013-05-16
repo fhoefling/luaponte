@@ -51,13 +51,13 @@ foreach(test
   virtual_inheritance
   yield
 )
-  add_executable(test_${test}
+  add_executable(test_luaponte_${test}
     test_${test}.cpp
   )
-  add_test(${test}
-    test_${test}
+  add_test(luaponte/${test}
+    test_luaponte_${test}
   )
-  target_link_libraries(test_${test}
+  target_link_libraries(test_luaponte_${test}
     test_main
     luaponte
     ${LUA_LIBRARIES}
