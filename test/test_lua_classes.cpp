@@ -273,7 +273,6 @@ void test_main(lua_State* L)
 
 #endif
 
-    base* ptr;
     {
         LUAPONTE_CHECK_STACK(L);
 
@@ -330,6 +329,7 @@ void test_main(lua_State* L)
     own_ptr.release();
 
     // test virtual functions that are overridden by lua
+    base* ptr = nullptr;
     TEST_NOTHROW(
         ptr = call_function<base*>(L, "derived")
     );
