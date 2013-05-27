@@ -25,8 +25,11 @@ namespace luaponte {
 
 using boost::get_pointer;
 
-#if (BOOST_VERSION < 105300) && !defined( BOOST_NO_CXX11_SMART_PTR )
-// boost 1.53.0 and onwards already define these functions
+#if (BOOST_VERSION < 105300) || (defined(__clang__) && defined(BOOST_NO_CXX11_SMART_PTR))
+// Boost 1.53.0 and onwards already define these functions
+// if Boost is unable to detect CXX11 smart-pointers with Clang
+// (see https://svn.boost.org/trac/boost/ticket/7473)
+// also define these functions
 
 template <typename T>
 T* get_pointer(std::shared_ptr<T> const& ptr)
