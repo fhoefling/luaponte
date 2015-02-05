@@ -534,6 +534,8 @@ namespace detail {
 
 // Needed because of some strange ADL issues.
 
+#if (BOOST_VERSION < 105700)
+
 #define LUAPONTE_OPERATOR_ADL_WKND(op) \
   inline bool operator op( \
       basic_iterator<basic_access> const& x \
@@ -553,6 +555,8 @@ namespace detail {
   LUAPONTE_OPERATOR_ADL_WKND(!=)
 
 #undef LUAPONTE_OPERATOR_ADL_WKND
+
+#endif // BOOST_VERSION < 105700
 
 } // namespace detail
 
