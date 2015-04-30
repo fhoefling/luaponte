@@ -9,8 +9,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(Boost 1.49.0 QUIET REQUIRED)
 find_package(Lua QUIET REQUIRED)
 
-include_directories(${Boost_INCLUDE_DIR})
-include_directories(${LUA_INCLUDE_DIR})
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
+include_directories(SYSTEM ${LUA_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 enable_testing()
